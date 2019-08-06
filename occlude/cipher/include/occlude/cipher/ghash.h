@@ -1,5 +1,8 @@
+#pragma once
+
 #include <x86intrin.h>
 #include <cstdint>
+#include <ostream>
 
 struct block {
   __m128i b = {};
@@ -22,8 +25,8 @@ struct block {
     auto [x,y] = a.b == b.b;
     return !x && !y;
   }
-  friend block& operator<<(std::ostream& os, block b) noexcept {
-
+  friend std::ostream& operator<<(std::ostream& os, block b) noexcept {
+    return os;
   }
 };
 
