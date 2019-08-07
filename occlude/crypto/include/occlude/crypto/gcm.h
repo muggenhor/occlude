@@ -5,15 +5,29 @@
 
 namespace Occlude::Crypto {
 
-__m128i load(std::span<uint8_t> buffer, size_t offset) {
+// Explicit load/store, because we care about endian order.
+uint64_t loadu64(std::vector<uint8_t>& buffer, size_t offset) {
+  size_t bytes = std::min(buffer.size() - offset, 8);
+  uint64_t value = 0;
+  for (size_t n = 0; n < bytes; n++) {
+    value |= (buffer[offset + n] << (8 * (7 - n)));
+  }
+}
 
-  uint64_t a = ((uint64_t)iv[0] << 56) | ((uint64_t)iv[1] << 48) | ((uint64_t)iv[2] << 40) | ((uint64_t)iv[3] << 32) | ((uint64_t)iv[4] << 24) | ((uint64_t)iv[5] << 16) | ((uint64_t)iv[6] << 8) | ((uint64_t)iv[7]);
-  uint64_t b = ((uint64_t)iv[8] << 56) | ((uint64_t)iv[9] << 48) | ((uint64_t)iv[10] << 40) | ((uint64_t)iv[11] << 32) | 1;
-  __m128i ctr{a, b};
+__m128i load(std::span<uint8_t> buffer, size_t offset) {
+  return __m128i{loadu64(buffer, offset), loadu64(buffer, offset+8);
+}
+
+void store(std::vector<uint8_t>& buffer, size_t offset, uint64_t data) {
+  size_t bytes = std::min(buffer.size() - offset, 8);
+  for (size_t n = 0; n < bytes; n++) {
+    buffer[offset + n] = (data >> (8 * (7 - n)));
+  }
 }
 
 void store(std::vector<uint8_t>& buffer, size_t offset, __m128i data) {
-
+  store(buffer, offset, data[0]);
+  store(buffer, offset+8, data[1]);
 }
 
 std::vector<uint8_t> AesGcmEncrypt(const Occlude::Cipher::AesKeySchedule& schedule, std::span<uint8_t> plaintext, std::span<uint8_t> additional, std::span<uint8_t> iv) {
