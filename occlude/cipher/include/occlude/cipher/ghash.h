@@ -25,9 +25,6 @@ struct block {
     auto [x,y] = a.b == b.b;
     return !x && !y;
   }
-  friend std::ostream& operator<<(std::ostream& os, block b) noexcept {
-    return os;
-  }
 };
 
 constexpr block reduction = { 0, 0b1000'0111 };
