@@ -11,7 +11,6 @@ public:
   explicit AesKeySchedule(const std::vector<uint8_t>& key);
 //private:
   __m128i eroundKeys[15];
-  __m128i droundKeys[13];
   enum keytype{
     Aes128,
     Aes192,
@@ -29,7 +28,15 @@ public:
     throw "unknown keysize";
   }
   friend __m128i AesEncrypt(const AesKeySchedule& key, __m128i block);
-  friend __m128i AesDecrypt(const AesKeySchedule& key, __m128i block);
+};
+
+class AesDecryptKeySchedule {
+public:
+  explicit AesDecryptKeySchedule(const AesKeySchedule& key);
+  __m128i droundKeys[15];
+  AesKeySchedule::keytype keysize;
+
+  friend __m128i AesDecrypt(const AesDecryptKeySchedule& key, __m128i block);
 };
 
 inline __m128i AesEncrypt(const AesKeySchedule& key, __m128i block) {
@@ -43,12 +50,12 @@ inline __m128i AesEncrypt(const AesKeySchedule& key, __m128i block) {
   return block;
 }
 
-inline __m128i AesDecrypt(const AesKeySchedule& key, __m128i block) {
-  block ^= key.eroundKeys[rounds(key.keysize)];
-  for (size_t n = 0; n < rounds(key.keysize) - 1; n++) {
+inline __m128i AesDecrypt(const AesDecryptKeySchedule& key, __m128i block) {
+  block ^= key.droundKeys[0];
+  for (size_t n = 1; n < rounds(key.keysize); n++) {
     block = _mm_aesdec_si128(block, key.droundKeys[n]);
   }
-  block = _mm_aesdeclast_si128(block, key.eroundKeys[0]);
+  block = _mm_aesdeclast_si128(block, key.droundKeys[rounds(key.keysize)]);
   return block;
 }
 

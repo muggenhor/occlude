@@ -3,9 +3,14 @@
 #include <catch.hpp>
 #include <iostream>
 
-bool EncDecWorks(Occlude::Cipher::AesKeySchedule& sch, __m128i plain, __m128i cipher) {
-  auto newenc = Occlude::Cipher::AesEncrypt(sch, plain);
-  auto newplain = Occlude::Cipher::AesDecrypt(sch, cipher);
+bool EncDecWorks(
+    const Occlude::Cipher::AesKeySchedule& enc_sch
+  , const Occlude::Cipher::AesDecryptKeySchedule& dec_sch
+  , __m128i plain
+  , __m128i cipher
+  ) {
+  auto newenc = Occlude::Cipher::AesEncrypt(enc_sch, plain);
+  auto newplain = Occlude::Cipher::AesDecrypt(dec_sch, cipher);
   auto [x,y] = newenc == cipher;
   auto [a,b] = newplain == plain;
   return (x && y && a && b);
@@ -57,17 +62,18 @@ TEST_CASE("key schedule") {
 TEST_CASE("aes test vectors") {
   std::vector<uint8_t> aeskey = 
   { 0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6, 0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C };
-  Occlude::Cipher::AesKeySchedule sch(aeskey);
-  REQUIRE(EncDecWorks(sch, 
+  Occlude::Cipher::AesKeySchedule enc_sch(aeskey);
+  Occlude::Cipher::AesDecryptKeySchedule dec_sch(enc_sch);
+  REQUIRE(EncDecWorks(enc_sch, dec_sch, 
     __m128i{(int64_t)0x969f402ee2bec16b, (int64_t)0x2a179373117e3de9}, 
     __m128i{(int64_t)0x60367a0db47bd73a, (int64_t)0x97ef6624f3ca9ea8}));
-  REQUIRE(EncDecWorks(sch, 
+  REQUIRE(EncDecWorks(enc_sch, dec_sch, 
     __m128i{(int64_t)0x9cac031e578a2dae, (int64_t)0x518eaf45ac6fb79e}, 
     __m128i{(int64_t)0x9d69b90385d5d3f5, (int64_t)0xafbafd965a8985e7}));
-  REQUIRE(EncDecWorks(sch, 
+  REQUIRE(EncDecWorks(enc_sch, dec_sch, 
     __m128i{(int64_t)0x11e45ca3461cc830, (int64_t)0xef520a1a19c1fbe5}, 
     __m128i{(int64_t)0x23ce8e597fcdb143, (int64_t)0x880603ede3001b88}));
-  REQUIRE(EncDecWorks(sch, 
+  REQUIRE(EncDecWorks(enc_sch, dec_sch, 
     __m128i{(int64_t)0x179b4fdf45249ff6, (int64_t)0x10376ce67b412bad}, 
     __m128i{(int64_t)0x3fade8275e780c7b, (int64_t)0xd45d720471202382}));
 }
