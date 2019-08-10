@@ -1,11 +1,10 @@
 #include "occlude/cipher/aes.h"
 
-#include <x86intrin.h>
-#include <vector>
-#include <cstddef>
 #include <cstdint>
-#include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <vector>
+#include <x86intrin.h>
 
 namespace Occlude::Cipher {
 
@@ -15,10 +14,11 @@ AesKeySchedule::AesKeySchedule(const std::vector<uint8_t>& key) {
     case 16: keysize = Aes128; break;
     case 24: // keysize = Aes192; break;
     case 32: // keysize = Aes256; break;
-    default: abort();
+    default: std::abort();
   }
-  memcpy(eroundKeys, key.data(), key.size());
-  for (size_t n = 0; n < 10; n++) {
+  std::memcpy(eroundKeys, key.data(), key.size());
+
+  for (std::size_t n = 0; n < 10; ++n) {
       __m128i t = eroundKeys[n] ^ _mm_srli_si128(_mm_aeskeygenassist_si128 (eroundKeys[n] ,roundConstants[n]), 0x0c);
       eroundKeys[n+1] = t ^ _mm_slli_si128 (t, 0x4) ^ _mm_slli_si128 (t, 0x8) ^ _mm_slli_si128 (t, 0xC);
   }

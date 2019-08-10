@@ -1,11 +1,8 @@
 #pragma once
 
-#include <x86intrin.h>
-#include <vector>
-#include <cstddef>
 #include <cstdint>
-#include <cstring>
-  #include <cstdio>
+#include <vector>
+#include <x86intrin.h>
 
 namespace Occlude::Cipher {
 
