@@ -21,7 +21,7 @@ public:
   friend __m128i AesDecrypt(const AesKeySchedule& key, __m128i block);
 };
 
-__m128i AesEncrypt(const AesKeySchedule& key, __m128i block) {
+inline __m128i AesEncrypt(const AesKeySchedule& key, __m128i block) {
   block ^= key.eroundKeys[0];
   for (size_t n = 0; n < 9; n++) {
     block = _mm_aesenc_si128(block, key.eroundKeys[n+1]);
@@ -30,7 +30,7 @@ __m128i AesEncrypt(const AesKeySchedule& key, __m128i block) {
   return block;
 }
 
-__m128i AesDecrypt(const AesKeySchedule& key, __m128i block) {
+inline __m128i AesDecrypt(const AesKeySchedule& key, __m128i block) {
   block ^= key.eroundKeys[10];
   for (size_t n = 0; n < 9; n++) {
     block = _mm_aesdec_si128(block, key.droundKeys[n]);
