@@ -1,5 +1,6 @@
 #include "occlude/cipher/aes.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -23,9 +24,13 @@ AesKeySchedule::AesKeySchedule(const std::vector<uint8_t>& key) {
     eroundKeys[n+1] = t ^ _mm_slli_si128 (t, 0x4) ^ _mm_slli_si128 (t, 0x8) ^ _mm_slli_si128 (t, 0xC);
   }
 
-  for (size_t n = 0; n < 9; n++) {
-      droundKeys[8 - n] = _mm_aesimc_si128(eroundKeys[n+1]);
-  }
+  using std::begin;
+  using std::end;
+
+  // compute decryption round keys in reverse order by performing a reverse MixColumn transform
+  std::reverse_copy(begin(eroundKeys) + 1, begin(eroundKeys) + rounds(keysize), droundKeys);
+  std::transform(begin(droundKeys), begin(droundKeys) + rounds(keysize) - 1, begin(droundKeys),
+      [] (auto key) { return _mm_aesimc_si128(key); });
 }
 
 }
