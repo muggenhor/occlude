@@ -9,14 +9,14 @@
 
 namespace Occlude::Cipher {
 
-template <uint8_t rconstant>
+template <uint8_t round>
 static __m128i nextRoundKey(__m128i in) {
-  auto t = in ^ _mm_srli_si128(_mm_aeskeygenassist_si128(in, rconstant), 0x0c);
+  constexpr const uint8_t roundConstants[] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36 };
+  auto t = in ^ _mm_srli_si128(_mm_aeskeygenassist_si128(in, roundConstants[round]), 0x0c);
   return t ^ _mm_slli_si128 (t, 0x4) ^ _mm_slli_si128 (t, 0x8) ^ _mm_slli_si128 (t, 0xC);
 }
 
 AesKeySchedule::AesKeySchedule(const std::vector<uint8_t>& key) {
-  constexpr const uint8_t roundConstants[] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36 };
   switch(key.size()) {
     case 16: keysize = Aes128; break;
     case 24: // keysize = Aes192; break;
@@ -25,16 +25,16 @@ AesKeySchedule::AesKeySchedule(const std::vector<uint8_t>& key) {
   }
   std::memcpy(eroundKeys, key.data(), key.size());
 
-  eroundKeys[1] = nextRoundKey<roundConstants[0]>(eroundKeys[0]);
-  eroundKeys[2] = nextRoundKey<roundConstants[1]>(eroundKeys[1]);
-  eroundKeys[3] = nextRoundKey<roundConstants[2]>(eroundKeys[2]);
-  eroundKeys[4] = nextRoundKey<roundConstants[3]>(eroundKeys[3]);
-  eroundKeys[5] = nextRoundKey<roundConstants[4]>(eroundKeys[4]);
-  eroundKeys[6] = nextRoundKey<roundConstants[5]>(eroundKeys[5]);
-  eroundKeys[7] = nextRoundKey<roundConstants[6]>(eroundKeys[6]);
-  eroundKeys[8] = nextRoundKey<roundConstants[7]>(eroundKeys[7]);
-  eroundKeys[9] = nextRoundKey<roundConstants[8]>(eroundKeys[8]);
-  eroundKeys[10] = nextRoundKey<roundConstants[9]>(eroundKeys[9]);
+  eroundKeys[1] = nextRoundKey<0>(eroundKeys[0]);
+  eroundKeys[2] = nextRoundKey<1>(eroundKeys[1]);
+  eroundKeys[3] = nextRoundKey<2>(eroundKeys[2]);
+  eroundKeys[4] = nextRoundKey<3>(eroundKeys[3]);
+  eroundKeys[5] = nextRoundKey<4>(eroundKeys[4]);
+  eroundKeys[6] = nextRoundKey<5>(eroundKeys[5]);
+  eroundKeys[7] = nextRoundKey<6>(eroundKeys[6]);
+  eroundKeys[8] = nextRoundKey<7>(eroundKeys[7]);
+  eroundKeys[9] = nextRoundKey<8>(eroundKeys[8]);
+  eroundKeys[10] = nextRoundKey<9>(eroundKeys[9]);
 }
 
 AesDecryptKeySchedule::AesDecryptKeySchedule(const AesKeySchedule& key)
