@@ -3,33 +3,11 @@
 #include <x86intrin.h>
 #include <cstdint>
 #include <ostream>
+#include "block.h"
 
-struct block {
-  __m128i b = {};
-  constexpr block() = default;
-  constexpr block(__m128i data)
-  : b(data)
-  {}
-  constexpr block(int64_t a, int64_t b)
-  : b{a, b}
-  {}
-  constexpr block& operator=(__m128i data) noexcept { b = data; return *this; }
-  constexpr operator __m128i() const noexcept { return b; }
-  constexpr block operator<<(int count) { return b << count; }
-  constexpr block operator>>(int count) { return b >> count; }
-  constexpr block& operator^=(block a) { b ^= a.b; return *this; }
-  constexpr block operator|(block a) noexcept { return b | a.b; }
-  friend constexpr block operator^(block a, block b) noexcept {
-    return block(a.b ^ b.b);
-  }
-  friend constexpr bool operator==(block a, block b) noexcept {
-    return a.b[0] == b.b[0] && a.b[1] == b.b[1];
-  }
-};
+static const block reduction = { static_cast<int64_t>(0xC200'0000'0000'0000), 0 };
 
-constexpr block reduction = { static_cast<int64_t>(0xC200'0000'0000'0000), 0 };
-
-block galoisMultiply(block xy, block h) {
+inline block galoisMultiply(block xy, block h) {
   // Use 4 64-bit clmul's to do a 128-bit clmul
   block resultLow = _mm_clmulepi64_si128(xy, h, 0x00);
   block resultMid = _mm_clmulepi64_si128(xy, h, 0x10) ^ _mm_clmulepi64_si128(xy, h, 0x01);
@@ -57,6 +35,6 @@ block galoisMultiply(block xy, block h) {
   return resultHigh;
 }
 
-block ghash_block(block x, block h, block hash) {
+inline block ghash_block(block x, block h, block hash) {
   return galoisMultiply(hash ^ x, h);
 }
