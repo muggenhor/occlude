@@ -23,8 +23,7 @@ struct block {
     return block(a.b ^ b.b);
   }
   friend constexpr bool operator==(block a, block b) noexcept {
-    auto [x,y] = a.b == b.b;
-    return !x && !y;
+    return a.b[0] == b.b[0] && a.b[1] == b.b[1];
   }
 };
 
@@ -61,4 +60,3 @@ block galoisMultiply(block xy, block h) {
 block ghash_block(block x, block h, block hash) {
   return galoisMultiply(hash ^ x, h);
 }
-
