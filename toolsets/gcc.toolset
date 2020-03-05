@@ -1,7 +1,0 @@
-
-template: __builtin_gcc
-compiler: g++ -mtune=native -march=native -fno-stack-protector -O3 -Wall -Wextra -Wpedantic
-linker: g++
-archiver: ar
-
-

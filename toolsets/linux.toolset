@@ -1,0 +1,7 @@
+
+template: __builtin_clang
+compiler: clang++ -mtune=native -march=native -fno-stack-protector -O3 -Wall -Wextra -Wpedantic -std=c++2a
+linker: clang++
+archiver: ar
+
+
