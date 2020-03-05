@@ -3,6 +3,7 @@
 #include <x86intrin.h>
 #include <cstdint>
 #include <ostream>
+#include <iomanip>
 
 struct block {
   __m128i b = {};
@@ -29,7 +30,7 @@ struct block {
     const uint8_t* p = (const uint8_t*)&a;
     for (size_t n = 0; n < 16; n++) {
       if (n && n % 4 == 0) os << " ";
-      os << std::hex << (uint32_t)p[n];
+      os << std::hex << std::setw(2) << std::setfill('0') << (uint32_t)p[n];
     }
     return os;
   }
